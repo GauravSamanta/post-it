@@ -25,7 +25,13 @@ class Settings:
         allowed_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,*")
         self.ALLOWED_HOSTS: List[str] = [host.strip() for host in allowed_hosts.split(",")]
         
-        self.DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+
+        # Database
+        self.DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:password@localhost:5432/app")
+
+        
+        # Redis
+
         self.REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
         
         self.SMTP_TLS: bool = os.getenv("SMTP_TLS", "true").lower() == "true"

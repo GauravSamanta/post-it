@@ -46,7 +46,14 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
-    app.add_middleware(SecurityHeadersMiddleware)
+
+    # Add middleware in reverse order (last added = first executed)
+    
+    # Security headers middleware
+    # app.add_middleware(SecurityHeadersMiddleware)
+    
+    # Request logging middleware
+
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     

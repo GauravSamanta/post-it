@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Union, Optional
 from jose import jwt, JWTError
-from passlib.context import CryptContext
+from hashlib import sha256
 import structlog
 
 from app.core.config import settings
 
 logger = structlog.get_logger(__name__)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_access_token(
     subject: Union[str, Any], expires_delta: timedelta = None
@@ -82,7 +81,10 @@ def verify_token(token: str, token_type: str = "access") -> Optional[str]:
 
 def get_password_hash(password: str) -> str:
     try:
-        return pwd_context.hash(password)
+
+        hashed = sha256(password.strip().encode()).hexdigest()
+        return hashed
+
     except Exception as e:
         logger.error("Failed to hash password", error=str(e))
         raise
@@ -90,7 +92,12 @@ def get_password_hash(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        return pwd_context.verify(plain_password, hashed_password)
+
+        hashed = sha256(plain_password.strip().encode()).hexdigest()
+        is_valid = hashed == hashed_password
+        logger.info("Password verification completed", is_valid=is_valid)
+        return is_valid
+
     except Exception as e:
         logger.error("Password verification failed", error=str(e))
         return False
