@@ -8,8 +8,6 @@ import structlog
 from app.core.config import settings
 
 logger = structlog.get_logger(__name__)
-
-# Create engine with production-ready settings
 if settings.DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
         settings.DATABASE_URL,
@@ -23,7 +21,7 @@ else:
         pool_pre_ping=True,
         pool_size=10,
         max_overflow=20,
-        pool_recycle=1800,  # 30 minutes
+        pool_recycle=1800,
         echo=settings.DEBUG,
     )
 
@@ -33,7 +31,6 @@ Base = declarative_base()
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Dependency to get database session."""
     db = SessionLocal()
     try:
         yield db
@@ -46,11 +43,9 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def get_db_health() -> bool:
-    """Check database health."""
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        logger.info("Database health check passed")
         return True
     except Exception as e:
         logger.error("Database health check failed", error=str(e))
