@@ -31,7 +31,8 @@ class Settings:
         self.ALLOWED_HOSTS: List[str] = [host.strip() for host in allowed_hosts.split(",")]
         
         # Database
-        self.DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+        self.DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:password@localhost:5432/app")
+
         
         # Redis
         self.REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")

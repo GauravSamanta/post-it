@@ -66,7 +66,7 @@ def create_application() -> FastAPI:
     # Add middleware in reverse order (last added = first executed)
     
     # Security headers middleware
-    app.add_middleware(SecurityHeadersMiddleware)
+    # app.add_middleware(SecurityHeadersMiddleware)
     
     # Request logging middleware
     app.add_middleware(RequestLoggingMiddleware)

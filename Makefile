@@ -81,7 +81,7 @@ format-frontend:
 
 # Database
 db-init:
-	cd backend && python scripts/init_db.py
+	cd backend && uv run -m scripts.init_db
 
 db-migrate:
 	cd backend && alembic upgrade head
@@ -92,7 +92,7 @@ db-revision:
 db-reset:
 	cd backend && rm -f app.db
 	cd backend && alembic upgrade head
-	cd backend && python scripts/init_db.py
+	cd backend && uv run -m scripts.init_db
 
 # Cleaning
 clean: clean-backend clean-frontend
