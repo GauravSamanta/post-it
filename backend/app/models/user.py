@@ -1,17 +1,33 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime
-from sqlalchemy.sql import func
-from app.core.database import Base
+from typing import Optional
+from datetime import datetime
+from pydantic import BaseModel, EmailStr
 
 
-class User(Base):
-    __tablename__ = "users"
+class User(BaseModel):
+    id: Optional[int] = None
+    email: str
+    hashed_password: str
+    full_name: Optional[str] = None
+    is_active: bool = True
+    is_superuser: bool = False
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    full_name = Column(String, nullable=True)
-    is_active = Column(Boolean, default=True)
-    is_superuser = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    class Config:
+        from_attributes = True
+
+    @classmethod
+    def from_record(cls, record):
+        if not record:
+            return None
+        return cls(
+            id=record['id'],
+            email=record['email'],
+            hashed_password=record['hashed_password'],
+            full_name=record['full_name'],
+            is_active=record['is_active'],
+            is_superuser=record['is_superuser'],
+            created_at=record['created_at'],
+            updated_at=record['updated_at']
+        )
 
