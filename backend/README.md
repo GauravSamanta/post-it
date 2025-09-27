@@ -4,14 +4,14 @@ A production-ready FastAPI application for managing post-it notes.
 
 ## Features
 
-- ✅ **Production-Ready**: Structured logging, security headers, error handling
-- ✅ **Authentication**: JWT-based auth with access/refresh tokens
-- ✅ **Database**: SQLAlchemy with connection pooling
-- ✅ **Validation**: Comprehensive request/response validation
-- ✅ **Monitoring**: Health checks with database connectivity
-- ✅ **Security**: CORS, trusted hosts, password hashing
-- ✅ **Middleware**: Request logging, compression, security headers
-- ✅ **Environment-aware**: Development/staging/production configs
+- Production-Ready: Structured logging, security headers, error handling
+- Authentication: JWT-based auth with access/refresh tokens
+- Database: SQLAlchemy with connection pooling
+- Validation: Comprehensive request/response validation
+- Monitoring: Health checks with database connectivity
+- Security: CORS, trusted hosts, password hashing
+- Middleware: Request logging, compression, security headers
+- Environment-aware: Development/staging/production configs
 
 ## Quick Start
 
@@ -56,13 +56,13 @@ A production-ready FastAPI application for managing post-it notes.
 ## API Documentation
 
 When running in development mode:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ## Health Checks
 
-- **Basic**: `GET /health`
-- **Detailed**: `GET /health/detailed` (includes database check)
+- Basic: `GET /health`
+- Detailed: `GET /health/detailed` (includes database check)
 
 ## Environment Variables
 
