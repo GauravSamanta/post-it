@@ -1,5 +1,3 @@
-"""Logging configuration for production."""
-
 import logging
 import logging.config
 import structlog
@@ -9,15 +7,11 @@ from app.core.config import settings
 
 
 def setup_logging() -> None:
-    """Configure structured logging for production."""
-    
-    # Configure standard logging
     logging.basicConfig(
         level=getattr(logging, settings.LOG_LEVEL.upper()),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     
-    # Configure structlog
     structlog.configure(
         processors=[
             structlog.stdlib.filter_by_level,
@@ -38,5 +32,4 @@ def setup_logging() -> None:
 
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
-    """Get a configured logger instance."""
     return structlog.get_logger(name)

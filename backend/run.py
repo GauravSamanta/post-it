@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Production-ready FastAPI application runner."""
 
 import uvicorn
 from app.main import app
@@ -7,9 +6,6 @@ from app.core.config import settings
 
 
 def main() -> None:
-    """Run the FastAPI application."""
-    
-    # Production configuration
     config = {
         "app": "app.main:app",
         "host": "0.0.0.0",
@@ -19,16 +15,15 @@ def main() -> None:
         "log_level": settings.LOG_LEVEL.lower(),
         "access_log": True,
         "use_colors": settings.ENVIRONMENT == "development",
-        "server_header": False,  # Security: hide server header
-        "date_header": False,    # Security: hide date header
+        "server_header": False,
+        "date_header": False,
     }
     
-    # Additional production settings
     if settings.ENVIRONMENT == "production":
         config.update({
             "reload": False,
             "debug": False,
-            "log_config": None,  # Use our custom logging
+            "log_config": None,
         })
     
     print(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
