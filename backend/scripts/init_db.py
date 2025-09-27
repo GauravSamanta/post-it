@@ -4,25 +4,33 @@ Database initialization script.
 Creates the initial database schema and superuser.
 """
 
-import asyncio
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import SessionLocal, engine
+from app.core.logging import setup_logging, get_logger
 from app.models import Base
 from app.crud.user import user_crud
 from app.schemas.user import UserCreate
+
+# Setup logging
+setup_logging()
+logger = get_logger(__name__)
 
 
 def init_db(db: Session) -> None:
     """Initialize database with tables and superuser."""
     
     # Create all tables
+    logger.info("Creating database tables...")
     Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created successfully")
     
     # Create superuser if it doesn't exist
+    logger.info("Checking for superuser...")
     user = user_crud.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
+        logger.info("Creating superuser...", email=settings.FIRST_SUPERUSER)
         user_in = UserCreate(
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
@@ -30,21 +38,23 @@ def init_db(db: Session) -> None:
             full_name="System Administrator"
         )
         user = user_crud.create(db, obj_in=user_in)
-        print(f"Created superuser: {user.email}")
+        logger.info("Superuser created successfully", email=user.email, user_id=user.id)
     else:
-        print(f"Superuser already exists: {user.email}")
+        logger.info("Superuser already exists", email=user.email, user_id=user.id)
 
 
 def main() -> None:
     """Main function."""
-    print("Initializing database...")
+    logger.info("Starting database initialization...")
     
     db = SessionLocal()
     try:
         init_db(db)
-        print("Database initialization completed successfully!")
+        db.commit()
+        logger.info("Database initialization completed successfully!")
     except Exception as e:
-        print(f"Error initializing database: {e}")
+        logger.error("Database initialization failed", error=str(e))
+        db.rollback()
         raise
     finally:
         db.close()
