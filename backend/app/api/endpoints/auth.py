@@ -3,11 +3,11 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 
 from app.api import dependencies
 from app.core import security
 from app.core.config import settings
+from app.core.database import Database
 from app.crud.user import user_crud
 from app.schemas.token import Token
 from app.schemas.user import User
@@ -16,14 +16,14 @@ router = APIRouter()
 
 
 @router.post("/login", response_model=Token)
-def login_access_token(
-    db: Session = Depends(dependencies.get_db),
+async def login_access_token(
+    db: Database = Depends(dependencies.get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = user_crud.authenticate(
+    user = await user_crud.authenticate(
         db, email=form_data.username, password=form_data.password
     )
     if not user:
@@ -51,12 +51,9 @@ def login_access_token(
 
 
 @router.post("/refresh", response_model=Token)
-def refresh_token(
+async def refresh_token(
     current_user: User = Depends(dependencies.get_current_user)
 ) -> Any:
-    """
-    Refresh access token
-    """
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     
@@ -72,7 +69,7 @@ def refresh_token(
 
 
 @router.get("/me", response_model=User)
-def read_users_me(
+async def read_users_me(
     current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Any:
     return current_user

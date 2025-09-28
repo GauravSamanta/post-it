@@ -27,20 +27,10 @@ class Settings:
         
 
         # Database
-        self.DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:password@localhost:5432/app")
-
+        self.DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:rishi@localhost:5432/app")
         
         # Redis
-
         self.REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
-        
-        self.SMTP_TLS: bool = os.getenv("SMTP_TLS", "true").lower() == "true"
-        self.SMTP_PORT: Optional[int] = int(os.getenv("SMTP_PORT", "587")) if os.getenv("SMTP_PORT") else None
-        self.SMTP_HOST: Optional[str] = os.getenv("SMTP_HOST")
-        self.SMTP_USER: Optional[str] = os.getenv("SMTP_USER")
-        self.SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
-        self.EMAILS_FROM_EMAIL: Optional[str] = os.getenv("EMAILS_FROM_EMAIL")
-        self.EMAILS_FROM_NAME: Optional[str] = os.getenv("EMAILS_FROM_NAME")
         
         self.FIRST_SUPERUSER: str = os.getenv("FIRST_SUPERUSER", "admin@example.com")
         self.FIRST_SUPERUSER_PASSWORD: str = os.getenv("FIRST_SUPERUSER_PASSWORD", "changethis")

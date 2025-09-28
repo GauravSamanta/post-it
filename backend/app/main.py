@@ -10,10 +10,9 @@ import uvicorn
 import structlog
 
 from app.core.config import settings
-from app.core.database import engine, get_db_health
+from app.core.database import database, get_db_health, USERS_TABLE_SQL
 from app.core.logging import setup_logging, get_logger
 from app.core.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
-from app.models import Base
 from app.api.router import api_router
 from app.core.exceptions import CustomException
 
@@ -24,12 +23,15 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
-        Base.metadata.create_all(bind=engine)
+        await database.connect()
+        await database.execute(USERS_TABLE_SQL)
     except Exception as e:
-        logger.error("Failed to create database tables", error=str(e))
+        logger.error("Failed to connect to database or create tables", error=str(e))
         raise
     
     yield
+    
+    await database.disconnect()
 
 
 def create_application() -> FastAPI:
@@ -140,7 +142,7 @@ def create_application() -> FastAPI:
 
     @app.get("/health/detailed")
     async def detailed_health_check() -> Dict[str, Any]:
-        db_healthy = get_db_health()
+        db_healthy = await get_db_health()
         
         health_status = {
             "status": "healthy" if db_healthy else "unhealthy",

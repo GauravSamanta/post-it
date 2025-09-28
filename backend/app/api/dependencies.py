@@ -3,12 +3,11 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
 import structlog
 
 from app.core import security
 from app.core.config import settings
-from app.core.database import get_db
+from app.core.database import get_db, Database
 from app.crud.user import user_crud
 from app.models.user import User
 from app.schemas.token import TokenPayload
@@ -17,8 +16,8 @@ logger = structlog.get_logger(__name__)
 reusable_oauth2 = HTTPBearer()
 
 
-def get_current_user(
-    db: Session = Depends(get_db),
+async def get_current_user(
+    db: Database = Depends(get_db),
     credentials: HTTPAuthorizationCredentials = Depends(reusable_oauth2)
 ) -> User:
     try:
@@ -38,7 +37,7 @@ def get_current_user(
             detail="Invalid token: missing subject",
         )
     
-    user = user_crud.get(db, id=token_data.sub)
+    user = await user_crud.get(db, id=int(token_data.sub))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,7 +47,7 @@ def get_current_user(
     return user
 
 
-def get_current_active_user(
+async def get_current_active_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
     if not user_crud.is_active(current_user):
@@ -59,7 +58,7 @@ def get_current_active_user(
     return current_user
 
 
-def get_current_active_superuser(
+async def get_current_active_superuser(
     current_user: User = Depends(get_current_user),
 ) -> User:
     if not user_crud.is_superuser(current_user):
