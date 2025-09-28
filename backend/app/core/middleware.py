@@ -1,46 +1,17 @@
 import time
-import uuid
-from typing import Callable
-
-import structlog
-from fastapi import Request, Response
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-
-logger = structlog.get_logger(__name__)
-
-
-class RequestLoggingMiddleware(BaseHTTPMiddleware):
-
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        request_id = str(uuid.uuid4())
-        request.state.request_id = request_id
-
-        try:
-            response = await call_next(request)
-            response.headers["X-Request-ID"] = request_id
-            return response
-
-        except Exception as e:
-            logger.error("Request failed", request_id=request_id, error=str(e))
-            raise
+from app.core.logging import logger
 
 
-def add_security_headers(response: Response) -> None:
-    response.headers.update(
-        {
-            "X-Content-Type-Options": "nosniff",
-            "X-Frame-Options": "DENY",
-            "X-XSS-Protection": "1; mode=block",
-            "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-            "Referrer-Policy": "strict-origin-when-cross-origin",
-            "Content-Security-Policy": "default-src 'self'",
-        }
-    )
-
-
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
         response = await call_next(request)
-        add_security_headers(response)
+        process_time = (time.time() - start_time) * 1000
+
+        logger.info(
+            f"{request.client.host} - {request.method} {request.url.path} "
+            f"completed_in={process_time:.2f}ms status_code={response.status_code}"
+        )
         return response

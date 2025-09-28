@@ -1,36 +1,30 @@
 import logging
-import logging.config
-from typing import Any, Dict
+import os
+import coloredlogs
 
-import structlog
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
-from app.core.config import settings
+# Create a logger
+logger = logging.getLogger("fastapi-app")
+logger.setLevel(LOG_LEVEL)
 
+# Install coloredlogs for console output
+coloredlogs.install(
+    level=LOG_LEVEL,
+    logger=logger,
+    fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
 
-def setup_logging() -> None:
-    logging.basicConfig(
-        level=getattr(logging, settings.LOG_LEVEL.upper()),
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
+# Optional file logging
+file_handler = logging.FileHandler("app.log")
+file_handler.setLevel(LOG_LEVEL)
+file_handler.setFormatter(
+    logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+)
+logger.addHandler(file_handler)
 
-    structlog.configure(
-        processors=[
-            structlog.stdlib.filter_by_level,
-            structlog.stdlib.add_logger_name,
-            structlog.stdlib.add_log_level,
-            structlog.stdlib.PositionalArgumentsFormatter(),
-            structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.format_exc_info,
-            structlog.processors.UnicodeDecoder(),
-            structlog.processors.JSONRenderer(),
-        ],
-        context_class=dict,
-        logger_factory=structlog.stdlib.LoggerFactory(),
-        wrapper_class=structlog.stdlib.BoundLogger,
-        cache_logger_on_first_use=True,
-    )
-
-
-def get_logger(name: str) -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(name)
+# Replace FastAPI/Starlette loggers
+logging.getLogger("uvicorn").handlers = logger.handlers
+logging.getLogger("uvicorn.error").handlers = logger.handlers
+logging.getLogger("uvicorn.access").handlers = logger.handlers
+logging.getLogger("fastapi").handlers = logger.handlers
