@@ -1,6 +1,7 @@
-from typing import Optional
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, EmailStr
 
 
 # Shared properties
@@ -40,4 +41,3 @@ class User(UserInDBBase):
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
     hashed_password: str
-

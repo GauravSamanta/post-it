@@ -1,5 +1,6 @@
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr
 
 
@@ -21,13 +22,12 @@ class User(BaseModel):
         if not record:
             return None
         return cls(
-            id=record['id'],
-            email=record['email'],
-            hashed_password=record['hashed_password'],
-            full_name=record['full_name'],
-            is_active=record['is_active'],
-            is_superuser=record['is_superuser'],
-            created_at=record['created_at'],
-            updated_at=record['updated_at']
+            id=record["id"],
+            email=record["email"],
+            hashed_password=record["hashed_password"],
+            full_name=record["full_name"],
+            is_active=record["is_active"],
+            is_superuser=record["is_superuser"],
+            created_at=record["created_at"],
+            updated_at=record["updated_at"],
         )
-

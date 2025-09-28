@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import uvicorn
-from app.main import app
+
 from app.core.config import settings
+from app.main import app
 
 
 def main() -> None:
@@ -18,14 +19,16 @@ def main() -> None:
         "server_header": False,
         "date_header": False,
     }
-    
+
     if settings.ENVIRONMENT == "production":
-        config.update({
-            "reload": False,
-            "debug": False,
-            "log_config": None,
-        })
-    
+        config.update(
+            {
+                "reload": False,
+                "debug": False,
+                "log_config": None,
+            }
+        )
+
     print(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
     print(f"Environment: {settings.ENVIRONMENT}")
     print(f"Debug mode: {settings.DEBUG}")
@@ -33,7 +36,7 @@ def main() -> None:
     print(f"Workers: {config['workers']}")
     print(f"Host: {config['host']}:{config['port']}")
     print("-" * 50)
-    
+
     uvicorn.run(**config)
 
 

@@ -1,55 +1,57 @@
-import asyncpg
-from typing import AsyncGenerator
-import structlog
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
+import asyncpg
+import structlog
 
 from app.core.config import settings
 
 logger = structlog.get_logger(__name__)
 
+
 class Database:
     def __init__(self):
         self.pool = None
-    
+
     async def connect(self):
         self.pool = await asyncpg.create_pool(
-            settings.DATABASE_URL,
-            min_size=1,
-            max_size=10,
-            command_timeout=60
+            settings.DATABASE_URL, min_size=1, max_size=10, command_timeout=60
         )
         logger.info("Database pool created")
-    
+
     async def disconnect(self):
         if self.pool:
             await self.pool.close()
             logger.info("Database pool closed")
-    
+
     @asynccontextmanager
     async def get_connection(self):
         async with self.pool.acquire() as conn:
             yield conn
-    
+
     async def execute(self, query: str, *args):
         async with self.get_connection() as conn:
             return await conn.execute(query, *args)
-    
+
     async def fetch(self, query: str, *args):
         async with self.get_connection() as conn:
             return await conn.fetch(query, *args)
-    
+
     async def fetchrow(self, query: str, *args):
         async with self.get_connection() as conn:
             return await conn.fetchrow(query, *args)
-    
+
     async def fetchval(self, query: str, *args):
         async with self.get_connection() as conn:
             return await conn.fetchval(query, *args)
 
+
 database = Database()
+
 
 async def get_db() -> AsyncGenerator[Database, None]:
     yield database
+
 
 async def get_db_health() -> bool:
     try:
@@ -61,6 +63,7 @@ async def get_db_health() -> bool:
     except Exception as e:
         logger.error("Database health check failed", error=str(e))
         return False
+
 
 # SQL Schema for table creation
 USERS_TABLE_SQL = """

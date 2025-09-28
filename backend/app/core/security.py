@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Union, Optional
-from jose import jwt, JWTError
 from hashlib import sha256
+from typing import Any, Optional, Union
+
 import structlog
+from jose import JWTError, jwt
 
 from app.core.config import settings
 
@@ -13,21 +14,18 @@ def create_access_token(
     subject: Union[str, Any], expires_delta: timedelta = None
 ) -> str:
     now = datetime.now(timezone.utc)
-    
+
     if expires_delta:
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    
-    to_encode = {
-        "exp": expire,
-        "sub": str(subject),
-        "type": "access",
-        "iat": now
-    }
-    
+
+    to_encode = {"exp": expire, "sub": str(subject), "type": "access", "iat": now}
+
     try:
-        encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        encoded_jwt = jwt.encode(
+            to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+        )
         return encoded_jwt
     except Exception as e:
         logger.error("Failed to create access token", error=str(e))
@@ -38,27 +36,22 @@ def create_refresh_token(
     subject: Union[str, Any], expires_delta: timedelta = None
 ) -> str:
     now = datetime.now(timezone.utc)
-    
+
     if expires_delta:
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-    
-    to_encode = {
-        "exp": expire,
-        "sub": str(subject),
-        "type": "refresh",
-        "iat": now
-    }
-    
+
+    to_encode = {"exp": expire, "sub": str(subject), "type": "refresh", "iat": now}
+
     try:
-        encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        encoded_jwt = jwt.encode(
+            to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+        )
         return encoded_jwt
     except Exception as e:
         logger.error("Failed to create refresh token", error=str(e))
         raise
-
-
 
 
 def verify_token(token: str, token_type: str = "access") -> Optional[str]:
@@ -66,15 +59,15 @@ def verify_token(token: str, token_type: str = "access") -> Optional[str]:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        
+
         user_id: str = payload.get("sub")
         token_type_payload: str = payload.get("type")
-        
+
         if user_id is None or token_type_payload != token_type:
             return None
-            
+
         return user_id
-        
+
     except JWTError:
         return None
 

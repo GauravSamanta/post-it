@@ -14,7 +14,7 @@ def test_login_success(client: TestClient, test_user):
     }
     response = client.post("/api/v1/auth/login", data=login_data)
     assert response.status_code == 200
-    
+
     data = response.json()
     assert "access_token" in data
     assert "refresh_token" in data
@@ -44,7 +44,7 @@ def test_get_current_user(client: TestClient, test_user):
     headers = {"Authorization": f"Bearer {token}"}
     response = client.get("/api/v1/auth/me", headers=headers)
     assert response.status_code == 200
-    
+
     data = response.json()
     assert data["email"] == test_user["email"]
     assert data["full_name"] == test_user["full_name"]
@@ -54,4 +54,3 @@ def test_get_current_user_invalid_token(client: TestClient):
     headers = {"Authorization": "Bearer invalid_token"}
     response = client.get("/api/v1/auth/me", headers=headers)
     assert response.status_code == 403
-

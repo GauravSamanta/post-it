@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 def test_create_user(client: TestClient, test_user):
     response = client.post("/api/v1/users/", json=test_user)
     assert response.status_code == 200
-    
+
     data = response.json()
     assert data["email"] == test_user["email"]
     assert data["full_name"] == test_user["full_name"]
@@ -32,7 +32,7 @@ def test_get_user_by_id(client: TestClient, test_user):
     # Create user and login
     create_response = client.post("/api/v1/users/", json=test_user)
     user_id = create_response.json()["id"]
-    
+
     login_data = {
         "username": test_user["email"],
         "password": test_user["password"],
@@ -44,7 +44,6 @@ def test_get_user_by_id(client: TestClient, test_user):
     headers = {"Authorization": f"Bearer {token}"}
     response = client.get(f"/api/v1/users/{user_id}", headers=headers)
     assert response.status_code == 200
-    
+
     data = response.json()
     assert data["email"] == test_user["email"]
-

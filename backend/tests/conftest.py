@@ -4,9 +4,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.core.database import get_db, Base
-from app.main import app
 from app.core.config import settings
+from app.core.database import Base, get_db
+from app.main import app
 
 # Create test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -49,4 +49,3 @@ def test_user():
         "password": "testpassword",
         "full_name": "Test User",
     }
-

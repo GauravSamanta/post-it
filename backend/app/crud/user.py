@@ -1,7 +1,7 @@
-from typing import Any, Dict, Optional, Union, List
+from typing import Any, Dict, List, Optional, Union
 
-from app.core.security import get_password_hash, verify_password
 from app.core.database import Database
+from app.core.security import get_password_hash, verify_password
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 
@@ -20,7 +20,9 @@ class CRUDUser:
         record = await db.fetchrow(query, id)
         return User.from_record(record)
 
-    async def get_multi(self, db: Database, *, skip: int = 0, limit: int = 100) -> List[User]:
+    async def get_multi(
+        self, db: Database, *, skip: int = 0, limit: int = 100
+    ) -> List[User]:
         query = "SELECT * FROM users OFFSET $1 LIMIT $2"
         records = await db.fetch(query, skip, limit)
         return [User.from_record(record) for record in records]
@@ -38,7 +40,7 @@ class CRUDUser:
             hashed_password,
             obj_in.full_name,
             obj_in.is_superuser,
-            True
+            True,
         )
         return User.from_record(record)
 
@@ -49,7 +51,7 @@ class CRUDUser:
             update_data = obj_in
         else:
             update_data = obj_in.dict(exclude_unset=True)
-        
+
         if update_data.get("password"):
             update_data["hashed_password"] = get_password_hash(update_data["password"])
             del update_data["password"]
@@ -59,7 +61,13 @@ class CRUDUser:
         param_count = 1
 
         for field, value in update_data.items():
-            if field in ["email", "hashed_password", "full_name", "is_active", "is_superuser"]:
+            if field in [
+                "email",
+                "hashed_password",
+                "full_name",
+                "is_active",
+                "is_superuser",
+            ]:
                 set_clauses.append(f"{field} = ${param_count}")
                 values.append(value)
                 param_count += 1
@@ -84,7 +92,9 @@ class CRUDUser:
         record = await db.fetchrow(query, id)
         return User.from_record(record)
 
-    async def authenticate(self, db: Database, *, email: str, password: str) -> Optional[User]:
+    async def authenticate(
+        self, db: Database, *, email: str, password: str
+    ) -> Optional[User]:
         user = await self.get_by_email(db, email=email)
         if not user:
             return None

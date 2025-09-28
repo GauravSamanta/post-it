@@ -6,7 +6,8 @@ from app.api import dependencies
 from app.core.database import Database
 from app.crud.user import user_crud
 from app.models.user import User
-from app.schemas.user import User as UserSchema, UserCreate, UserUpdate
+from app.schemas.user import User as UserSchema
+from app.schemas.user import UserCreate, UserUpdate
 
 router = APIRouter()
 
@@ -55,10 +56,10 @@ async def update_user_me(
         update_data["full_name"] = full_name
     if email is not None:
         update_data["email"] = email
-    
+
     if not update_data:
         return current_user
-    
+
     user = await user_crud.update(db, user_id=current_user.id, obj_in=update_data)
     return user
 
@@ -72,7 +73,7 @@ async def read_user_by_id(
     user = await user_crud.get(db, id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     if user.id == current_user.id:
         return user
     if not user_crud.is_superuser(current_user):
@@ -98,4 +99,3 @@ async def update_user(
         )
     user = await user_crud.update(db, user_id=user_id, obj_in=user_in)
     return user
-

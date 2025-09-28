@@ -1,7 +1,8 @@
 import logging
 import logging.config
-import structlog
 from typing import Any, Dict
+
+import structlog
 
 from app.core.config import settings
 
@@ -11,7 +12,7 @@ def setup_logging() -> None:
         level=getattr(logging, settings.LOG_LEVEL.upper()),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    
+
     structlog.configure(
         processors=[
             structlog.stdlib.filter_by_level,
@@ -22,7 +23,7 @@ def setup_logging() -> None:
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            structlog.processors.JSONRenderer()
+            structlog.processors.JSONRenderer(),
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
