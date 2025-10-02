@@ -1,20 +1,15 @@
-from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
-
-load_dotenv()
+# app/core/config.py
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Post-It"
-    DATABASE_URL: str
-    ENV: str = "development"
-    SECRET_KEY: str = ""
-    JWT_SECRET_KEY: str = "your-secret-key"
-    JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-
-    class Config:
-        env_file = ".env"
+	model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
+	DATABASE_URL: str
+	JWT_SECRET: str
+	JWT_ALGORITHM: str = 'HS256'
+	PROJECT_NAME: str = 'My Awesome Project'
+	API_V1_STR: str = '/api/v1'
+	PORT: int
 
 
 settings = Settings()

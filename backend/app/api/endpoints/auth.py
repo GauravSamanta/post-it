@@ -1,44 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException, logger
-from argon2 import PasswordHasher
-from app.api.deps import get_db  # must yield a single asyncpg connection
-from app.core.security import token_generator
-from app.db.queries.loader import load_queries
-from app.db.schemas.user import UserLogin, UserRead, UserCreate
-from app.core.security import verify_password, hash_password
-from app.core.logging import logger
-from app.db.models.user import User
-from app.services.user_service import login_user
+import asyncpg
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+
+from app.core.deps import get_db_connection
+from app.core.security import create_jwt
+from app.schemas.token import Token
+from app.schemas.user import UserCreate
+from app.services.user import UserService
 
 router = APIRouter()
-queries = load_queries()
 
 
-@router.post("/login")
-async def login(user: UserLogin):
+@router.post('/login', response_model=Token)
+async def login_for_access_token(
+	form_data: OAuth2PasswordRequestForm = Depends(),
+	conn: asyncpg.Connection = Depends(get_db_connection),
+):
+	user_service = UserService(conn)
+	user = await user_service.authenticate(email=form_data.username, password=form_data.password)
 
-    token=await login_user(user)
-
-    return {"access_token": token, "token_type": "bearer"}
-
-
-
-@router.post("/register", response_model=UserRead)
-async def register(user: UserCreate, conn=Depends(get_db)):
-    # Check if email already exists
-    existing = await conn.fetchrow(queries["users"]["get_user_by_email"], user.email)
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    # Hash password
-    hashed_pw = await hash_password(user.password)
-
-    # Insert new user
-    row = await conn.fetchrow(
-        queries["users"]["create_user"], user.username, user.email, hashed_pw
-    )
-    return UserRead(**row)
+	access_token = create_jwt(data={'sub': user.email})
+	return {'access_token': access_token, 'token_type': 'bearer'}
 
 
-@router.post("/logout")
-async def logout():
-    return {"message": "Logout endpoint"}
+@router.post('/register', status_code=status.HTTP_201_CREATED)
+async def register_user(
+	form_data: UserCreate, conn: asyncpg.Connection = Depends(get_db_connection)
+):
+	user_service = UserService(conn)
+	try:
+		await user_service.create(user_in=form_data)
+	except Exception as e:
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+	return {'msg': 'User created successfully'}

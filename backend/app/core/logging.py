@@ -1,30 +1,30 @@
 import logging
-import os
-import coloredlogs
+import sys
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
-# Create a logger
-logger = logging.getLogger("fastapi-app")
-logger.setLevel(LOG_LEVEL)
+def setup_logging():
+	"""
+	Configures logging for the application.
+	"""
+	# Get the root logger
+	logger = logging.getLogger()
+	logger.setLevel(logging.INFO)  # Set the minimum level of messages to handle
 
-# Install coloredlogs for console output
-coloredlogs.install(
-    level=LOG_LEVEL,
-    logger=logger,
-    fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-)
+	# Create a handler to write log messages to the console (stdout)
+	handler = logging.StreamHandler(sys.stdout)
 
-# Optional file logging
-file_handler = logging.FileHandler("app.log")
-file_handler.setLevel(LOG_LEVEL)
-file_handler.setFormatter(
-    logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
-)
-logger.addHandler(file_handler)
+	# Create a formatter and set it for the handler
+	# This format is a good starting point for structured logging
+	formatter = logging.Formatter(
+		'{"timestamp": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}'
+	)
+	handler.setFormatter(formatter)
 
-# Replace FastAPI/Starlette loggers
-logging.getLogger("uvicorn").handlers = logger.handlers
-logging.getLogger("uvicorn.error").handlers = logger.handlers
-logging.getLogger("uvicorn.access").handlers = logger.handlers
-logging.getLogger("fastapi").handlers = logger.handlers
+	# Add the handler to the logger
+	# Avoid adding handlers if they already exist
+	if not logger.handlers:
+		logger.addHandler(handler)
+
+
+# You can also get a specific logger for your app
+log = logging.getLogger(__name__)
