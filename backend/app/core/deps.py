@@ -1,4 +1,5 @@
-from typing import AsyncGenerator
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Annotated
 
 import asyncpg
 from fastapi import Depends, HTTPException, status
@@ -14,7 +15,7 @@ from app.services.user import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f'{settings.API_V1_STR}/auth/login')
 
-
+@asynccontextmanager
 async def get_db_connection() -> AsyncGenerator[asyncpg.Connection, None]:
 	"""Dependency to get a database connection from the pool."""
 	pool = get_pool()
@@ -22,15 +23,9 @@ async def get_db_connection() -> AsyncGenerator[asyncpg.Connection, None]:
 		yield connection
 
 
-async def get_user_service(
-	conn: asyncpg.Connection = Depends(get_db_connection),
-) -> UserService:
-	return UserService(conn)
-
-
 async def get_current_user(
+	user_service: Annotated[UserService, Depends(UserService)],
 	token: str = Depends(oauth2_scheme),
-	user_service: UserService = Depends(get_user_service),
 ) -> UserInDB:
 	credentials_exception = HTTPException(
 		status_code=status.HTTP_401_UNAUTHORIZED,

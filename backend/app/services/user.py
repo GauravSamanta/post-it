@@ -1,5 +1,6 @@
-import asyncpg
+from typing import Annotated
 from argon2 import PasswordHasher
+from fastapi import Depends
 
 from app.core.exceptions import DuplicateUserException, UserNotFoundException
 from app.repository.user import UserRepository
@@ -7,8 +8,8 @@ from app.schemas.user import UserCreate
 
 
 class UserService:
-	def __init__(self, conn: asyncpg.Connection):
-		self.repo = UserRepository(conn)
+	def __init__(self, repo: Annotated[UserRepository, Depends(UserRepository)]):
+		self.repo = repo
 		self.ph = PasswordHasher()
 
 	async def create(self, *, user_in: UserCreate):

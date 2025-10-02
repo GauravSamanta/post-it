@@ -1,10 +1,13 @@
 import asyncpg
+from typing import Annotated
+from fastapi import Depends
 
 from app.schemas.user import UserCreate, UserInDB
+from app.core.deps import get_db_connection
 
 
 class UserRepository:
-	def __init__(self, conn: asyncpg.Connection):
+	def __init__(self, conn: Annotated[asyncpg.Connection, Depends(get_db_connection)]):
 		self.conn = conn
 
 	async def get_by_email(self, *, email: str) -> UserInDB | None:
