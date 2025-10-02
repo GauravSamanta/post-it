@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -8,6 +9,7 @@ from app.schemas.user import UserCreate
 from app.services.user import UserService
 
 router = APIRouter()
+
 
 @router.post('/login', response_model=Token)
 async def login_for_access_token(
@@ -22,7 +24,7 @@ async def login_for_access_token(
 
 @router.post('/register', status_code=status.HTTP_201_CREATED)
 async def register_user(
-	form_data: UserCreate, 
+	form_data: UserCreate,
 	user_service: Annotated[UserService, Depends(UserService)] = None,
 ):
 	try:

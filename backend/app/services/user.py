@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from argon2 import PasswordHasher
 from fastapi import Depends
 
