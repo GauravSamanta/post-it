@@ -8,9 +8,9 @@ from pydantic import ValidationError
 from app.core.config import settings
 from app.core.database import get_pool
 from app.core.security import jwt
-from app.repository.user import UserRepository  # Direct repo access for auth lookup
 from app.schemas.token import TokenData
 from app.schemas.user import UserInDB
+from app.services.user import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f'{settings.API_V1_STR}/auth/login')
 
@@ -22,9 +22,15 @@ async def get_db_connection() -> AsyncGenerator[asyncpg.Connection, None]:
 		yield connection
 
 
+async def get_user_service(
+	conn: asyncpg.Connection = Depends(get_db_connection),
+) -> UserService:
+	return UserService(conn)
+
+
 async def get_current_user(
 	token: str = Depends(oauth2_scheme),
-	conn: asyncpg.Connection = Depends(get_db_connection),
+	user_service: UserService = Depends(get_user_service),
 ) -> UserInDB:
 	credentials_exception = HTTPException(
 		status_code=status.HTTP_401_UNAUTHORIZED,
@@ -40,8 +46,7 @@ async def get_current_user(
 	except ValidationError:
 		raise credentials_exception
 
-	user_repo = UserRepository(conn)
-	user = await user_repo.get_by_email(email=token_data.email)
+	user = await user_service.get_by_email(email=token_data.email)
 	if user is None:
 		raise credentials_exception
 	return user
