@@ -1,7 +1,8 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.core.deps import get_user_service
 from app.core.security import create_jwt
 from app.schemas.token import Token
 from app.schemas.user import UserCreate
@@ -13,7 +14,7 @@ router = APIRouter()
 @router.post('/login', response_model=Token)
 async def login_for_access_token(
 	form_data: OAuth2PasswordRequestForm = Depends(),
-	user_service: UserService = Depends(get_user_service),
+	user_service: Annotated[UserService, Depends(UserService)] = None,
 ):
 	user = await user_service.authenticate(email=form_data.username, password=form_data.password)
 
@@ -23,8 +24,8 @@ async def login_for_access_token(
 
 @router.post('/register', status_code=status.HTTP_201_CREATED)
 async def register_user(
-	form_data: UserCreate, 
-	user_service: UserService = Depends(get_user_service),
+	form_data: UserCreate,
+	user_service: Annotated[UserService, Depends(UserService)] = None,
 ):
 	try:
 		await user_service.create(user_in=form_data)
