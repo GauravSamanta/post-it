@@ -7,11 +7,12 @@ from app.core.security import create_jwt
 from app.schemas.token import Token
 from app.schemas.user import UserCreate
 from app.services.user import UserService
+from app.schemas.auth import LoginResponse  
 
 router = APIRouter()
 
 
-@router.post('/login', response_model=Token)
+@router.post('/login', response_model=LoginResponse)
 async def login_for_access_token(
 	form_data: OAuth2PasswordRequestForm = Depends(),
 	user_service: Annotated[UserService, Depends(UserService)] = None,
@@ -20,7 +21,7 @@ async def login_for_access_token(
 	user = await user_service.authenticate(email=form_data.username, password=form_data.password)
 
 	access_token = create_jwt(data={'sub': user.email})
-	return {'access_token': access_token, 'token_type': 'bearer'}
+	return {'access_token': access_token, 'token_type': 'bearer', "user": user}
 
 
 @router.post('/register', status_code=status.HTTP_201_CREATED)

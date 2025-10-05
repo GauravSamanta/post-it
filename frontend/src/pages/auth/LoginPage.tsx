@@ -42,33 +42,11 @@ export const LoginPage = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       clearError();
-
-      const body = new URLSearchParams();
-      body.append("username", data.email); 
-      body.append("password", data.password);
-
-      const response = await fetch("http://127.0.0.1:8000/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "application/json",
-        },
-        body: body.toString(),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(errorData.detail || "Login failed");
-        return;
-      }
-
-      const result = await response.json();
+      await login({ email: data.email, password: data.password });
       toast.success("Welcome back!");
-      login(result); 
       navigate(from, { replace: true });
     } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong");
+      toast.error(err instanceof Error ? err.message : "Login failed");
     }
   };
 
