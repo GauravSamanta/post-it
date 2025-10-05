@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.schemas.user import UserInDB, UserPublic
+from app.schemas.user import User, UserPublic
 
 router = APIRouter()
 
