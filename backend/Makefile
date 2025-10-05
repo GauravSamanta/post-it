@@ -1,4 +1,7 @@
-.PHONY: help install run format
+include .env
+export $(shell sed 's/=.*//' .env)
+
+.PHONY: help
 
 help:
 	@echo "Commands:"
@@ -10,7 +13,7 @@ install:
 	uv sync
 
 run:
-	uvicorn app.main:app --reload --port 8000
+	uvicorn app.main:app --reload --port $(PORT)
 
 format:
 	ruff check --select I --fix && ruff format
