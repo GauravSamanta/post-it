@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 // Define types inline to avoid import issues
 interface User {
@@ -50,18 +50,18 @@ type AuthStore = AuthState & AuthActions;
 // Mock users for demo
 const mockUsers = [
   {
-    id: '1',
-    username: 'demo',
-    email: 'demo@example.com',
-    displayName: 'Demo User',
+    id: "1",
+    username: "demo",
+    email: "demo@example.com",
+    displayName: "Demo User",
     avatar: null,
-    bio: 'This is a demo user for the frontend application',
+    bio: "This is a demo user for the frontend application",
     verified: true,
     followersCount: 1250,
     followingCount: 340,
     postsCount: 89,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: "2024-01-15T10:00:00Z",
+    updatedAt: "2024-01-15T10:00:00Z",
   },
 ];
 
@@ -75,39 +75,51 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   // Actions
   login: async (credentials: LoginCredentials) => {
     set({ isLoading: true, error: null });
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Simple validation for demo
-    if (credentials.email === 'demo@example.com' && credentials.password === 'password') {
-      const user = mockUsers[0];
-      
-      // Store in localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('isAuthenticated', 'true');
-      
+
+    try {
+      const body = new URLSearchParams();
+      body.append("username", credentials.email);
+      body.append("password", credentials.password);
+
+      const res = await fetch("http://127.0.0.1:8000/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        set({ isLoading: false, error: err.detail || "Login failed" });
+        throw new Error(err.detail || "Login failed");
+      }
+
+      const data = await res.json();
+      // backend should return { access_token, user }
+      const { access_token, user } = data;
+      localStorage.setItem("token", access_token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("isAuthenticated", "true");
+
       set({
         user,
         isAuthenticated: true,
         isLoading: false,
         error: null,
       });
-    } else {
+    } catch (err) {
       set({
         isLoading: false,
-        error: 'Invalid email or password. Try demo@example.com / password',
+        error: err instanceof Error ? err.message : String(err),
       });
-      throw new Error('Invalid credentials');
     }
   },
 
   register: async (credentials: RegisterCredentials) => {
     set({ isLoading: true, error: null });
-    
+
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // Create new user from registration data
     const newUser: User = {
       id: Date.now().toString(),
@@ -123,11 +135,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     // Store in localStorage
-    localStorage.setItem('user', JSON.stringify(newUser));
-    localStorage.setItem('isAuthenticated', 'true');
-    
+    localStorage.setItem("user", JSON.stringify(newUser));
+    localStorage.setItem("isAuthenticated", "true");
+
     set({
       user: newUser,
       isAuthenticated: true,
@@ -137,9 +149,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('isAuthenticated');
-    
+    localStorage.removeItem("user");
+    localStorage.removeItem("isAuthenticated");
+
     set({
       user: null,
       isAuthenticated: false,
@@ -151,7 +163,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     const currentUser = get().user;
     if (currentUser) {
       const updatedUser = { ...currentUser, ...userData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       set({
         user: updatedUser,
       });
@@ -164,10 +176,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   checkAuth: () => {
     // Check localStorage for existing auth
-    const storedUser = localStorage.getItem('user');
-    const storedAuth = localStorage.getItem('isAuthenticated');
-    
-    if (storedUser && storedAuth === 'true') {
+    const storedUser = localStorage.getItem("user");
+    const storedAuth = localStorage.getItem("isAuthenticated");
+
+    if (storedUser && storedAuth === "true") {
       try {
         const user = JSON.parse(storedUser);
         set({
@@ -177,8 +189,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         });
       } catch (error) {
         // Clear invalid data
-        localStorage.removeItem('user');
-        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem("user");
+        localStorage.removeItem("isAuthenticated");
         set({
           user: null,
           isAuthenticated: false,
