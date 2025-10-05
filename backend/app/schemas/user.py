@@ -10,7 +10,7 @@ class UserCreate(UserBase):
 	password: str
 
 
-class UserInDB(UserBase):
+class UserPasswordHash(UserBase):
 	id: int
 	hashed_password: str
 
@@ -20,3 +20,15 @@ class UserInDB(UserBase):
 
 class UserPublic(UserBase):
 	id: int
+
+
+class User(UserPasswordHash):
+	pass
+
+
+class UserPasswordOnly(BaseModel):
+	"""Minimal class for password verification - only contains hashed_password"""
+	hashed_password: str
+	
+	class Config:
+		from_attributes = True
