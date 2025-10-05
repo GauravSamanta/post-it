@@ -16,6 +16,7 @@ async def login_for_access_token(
 	form_data: OAuth2PasswordRequestForm = Depends(),
 	user_service: Annotated[UserService, Depends(UserService)] = None,
 ):
+	# TODO: change the username -> email
 	user = await user_service.authenticate(email=form_data.username, password=form_data.password)
 
 	access_token = create_jwt(data={'sub': user.email})
